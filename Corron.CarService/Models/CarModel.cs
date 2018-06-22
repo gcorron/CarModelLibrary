@@ -28,6 +28,7 @@ namespace Corron.CarService
             {
                 _make = value;
                 NotifyOfPropertyChange();
+                NotifyOfPropertyChange(() => ToString);
             }
         }
         private string _make;
@@ -40,6 +41,7 @@ namespace Corron.CarService
             {
                 _model = value;
                 NotifyOfPropertyChange();
+                NotifyOfPropertyChange(() => ToString);
             }
         }
         private string _model;
@@ -52,6 +54,7 @@ namespace Corron.CarService
             {
                 _year = value;
                 NotifyOfPropertyChange();
+                NotifyOfPropertyChange(() => ToString);
             }
         }
         private int _year;
@@ -64,7 +67,7 @@ namespace Corron.CarService
             {
                 _owner = value;
                 NotifyOfPropertyChange();
-                //                NotifyOfPropertyChange(() => ToString);
+                NotifyOfPropertyChange(() => ToString);
             }
         }
         private string _owner;
