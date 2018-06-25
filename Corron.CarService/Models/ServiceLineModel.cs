@@ -21,9 +21,14 @@ namespace Corron.CarService
 
         private decimal[] _calcLineCharge;
         private static LineTypes _lastLineType;
+        private bool? _validState;
 
         public delegate void RecalcDelegate(); //delegate type declaration for recalc
         public static RecalcDelegate RecalcAction; //store the recalc method once for all (static)
+
+        public delegate void ValidChangedDelegate();
+        public static ValidChangedDelegate ValidChangedAction;
+
 
 
         //constructors
@@ -34,6 +39,8 @@ namespace Corron.CarService
             ServiceLineDesc = "< Enter Description >";
             ServiceLineCharge = 0;
             _calcLineCharge = new decimal[] {0M,0M};
+            _validState = null;
+            ValidChangedAction();
         }
 
         public ServiceLineModel(ServiceLineModel copy)
@@ -74,7 +81,8 @@ namespace Corron.CarService
             set
             {
                 _serviceLineDesc = value;
-                NotifyOfPropertyChange(() => IsValidState);
+                //NotifyOfPropertyChange(() => IsValidState);
+                NotifyIfValidChanged();
             }
         }
         private string _serviceLineDesc;
@@ -103,9 +111,9 @@ namespace Corron.CarService
             set
             {
                 _chargeString = value;
-                // NotifyOfPropertyChange();
                 Validation.ValidateCostString(value, out _serviceLineCharge);
-                NotifyOfPropertyChange(() => IsValidState);
+                NotifyIfValidChanged();
+                //NotifyOfPropertyChange(() => IsValidState);
                 DoRecalc();
             }
         }
@@ -125,6 +133,8 @@ namespace Corron.CarService
         }
         private byte _delete;
 
+ 
+
         public bool IsValidState
         {
             get
@@ -138,7 +148,16 @@ namespace Corron.CarService
 
         // Methods
 
- 
+        private void NotifyIfValidChanged()
+        {
+            bool newValidState = IsValidState;
+            if (newValidState == _validState) //_validState is Nullable, so only test that works is equality
+                return;
+
+            ValidChangedAction();
+            _validState = newValidState;
+        }
+
         public void DoRecalc()
         {
             if (RecalcAction is null)
@@ -160,7 +179,6 @@ namespace Corron.CarService
         public decimal[] ChargeChanges() //retrieves changes in line charge since the last snapshot, then takes a new snapshot
         {
             decimal[] change = new decimal[] { 0M , 0M } ;
-
 
             if (_serviceLineType == LineTypes.Labor && Delete == 0)
                 change[0] = _serviceLineCharge - _calcLineCharge[0];

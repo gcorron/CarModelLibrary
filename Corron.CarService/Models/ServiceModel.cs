@@ -18,6 +18,7 @@ namespace Corron.CarService
         public readonly string[] _validateProperties = { "TechName", "ServiceDate" };
 
 
+
         // Constructors
         public ServiceModel(int carID)
         {
@@ -38,6 +39,7 @@ namespace Corron.CarService
         // Properties
         public ServiceLineModel CurrentServiceLine { get; set; }
 
+        [DataMember]
         public List<ServiceLineModel> ServiceLineList
         {
             get
@@ -135,22 +137,25 @@ namespace Corron.CarService
             {
                 if (_validateProperties.Any(s => !(this[s] is null)))
                     return false;
-                if (_serviceLineList.Count == 0)
-                    return false;
-                if (_serviceLineList.Any(s => s.IsValidState == false))
-                    return false;
-                return true;
+                return ServiceLinesAreValidState;
             }
         }
         
-        public bool ServiceLinesAreValidState //property is notified whenever fields change within the collection
+        public bool ServiceLinesAreValidState
         {
             get
             {
                 if (ServiceLineList is null)
                     return false;
-                return ServiceLineList.Any(s => !s.IsValidState);
+                if (ServiceLineList.Count == 0)
+                    return false;
+                return ServiceLineList.All(s => s.IsValidState);
             }
+        }
+
+        public void NotifyValidDetail() // called through a delegate from detail line when needed
+        {
+            NotifyOfPropertyChange(() => IsValidState);
         }
 
         public void RecalcCost()
@@ -211,6 +216,7 @@ namespace Corron.CarService
                 SL.SnapShotCharge();
             }
             ServiceLineModel.RecalcAction = RecalcCost;
+            ServiceLineModel.ValidChangedAction = NotifyValidDetail;
             NotifyOfPropertyChange(()=>IsValidState);
         }
 
