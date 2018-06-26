@@ -18,8 +18,10 @@ namespace Corron.CarService
             if (i > 0 && i == cost.Length - 3)
                 return ValidateCost(dcost);
             else
+            {
+                dcost = 0;
                 return "Invalid currency amount.";
-
+            }
         }
 
         public static string ValidateCost(decimal cost)

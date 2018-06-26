@@ -101,10 +101,11 @@ namespace Corron.CarService
         // IDataErrorInfo
         public string Error
         {
-            get { return _error; }
-            set { _error = value; }
+            get
+            {
+                return string.Empty;
+            }
         }
-        private string _error;
 
         public string this[string columnName] {
             get

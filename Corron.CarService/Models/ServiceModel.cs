@@ -188,7 +188,13 @@ namespace Corron.CarService
         }
 
         // Implements IDataErrorInfo
-        public string Error => throw new NotImplementedException();
+        public string Error
+        {
+            get
+            {
+                return string.Empty;
+            }
+        }
 
         public string this[string columnName]
         {

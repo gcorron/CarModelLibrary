@@ -36,10 +36,13 @@ namespace Corron.CarService
         public ServiceLineModel()
         {
             ServiceLineType = _lastLineType;
-            ServiceLineDesc = "< Enter Description >";
+            ServiceLineDesc = "";
             ServiceLineCharge = 0;
             _calcLineCharge = new decimal[] {0M,0M};
             _validState = null;
+
+            if (ValidChangedAction is null)
+                return;
             ValidChangedAction();
         }
 
@@ -106,14 +109,13 @@ namespace Corron.CarService
         {
             get
             {
-                return _chargeString;
+                   return _chargeString;
             }
             set
             {
                 _chargeString = value;
                 Validation.ValidateCostString(value, out _serviceLineCharge);
                 NotifyIfValidChanged();
-                //NotifyOfPropertyChange(() => IsValidState);
                 DoRecalc();
             }
         }
@@ -150,17 +152,19 @@ namespace Corron.CarService
 
         private void NotifyIfValidChanged()
         {
+            if (ValidChangedAction is null) //used stand-alone in web service
+                return;
+
             bool newValidState = IsValidState;
             if (newValidState == _validState) //_validState is Nullable, so only test that works is equality
                 return;
-
             ValidChangedAction();
             _validState = newValidState;
         }
 
         public void DoRecalc()
         {
-            if (RecalcAction is null)
+            if (RecalcAction is null) //used stand-alone in web service
                 return;
             RecalcAction();
         }
@@ -195,8 +199,15 @@ namespace Corron.CarService
         }
 
 
-        //IDataErrorInfo
-        public string Error => throw new NotImplementedException();
+        // Implements IDataErrorInfo
+        public string Error
+        {
+            get
+            {
+                return string.Empty;
+            }
+        }
+
 
         public string this[string columnName]
         {

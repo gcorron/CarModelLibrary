@@ -9,7 +9,7 @@
         string Owner { get; set; }
         int Year { get; set; }
 
-        string Error { get; set; }
+        string Error { get;}
         string this[string columnName] { get; }
 
         void BeginEdit();
