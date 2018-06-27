@@ -8,11 +8,10 @@ using System.Runtime.Serialization;
 namespace Corron.CarService
 {
     [DataContract]
-    public class ServiceModel : PropertyChangedBase, IComparable<ServiceModel>, IDataErrorInfo, IEditableObject
-    {
- 
+    public class ServiceModel : PropertyChangedBase, IEditableObject, IDataErrorInfo, IComparable<ServiceModel>, IServiceModel
+    { 
         private ServiceModel _editCopy;
-        private List<ServiceLineModel> _editServiceLines;
+        private List<IServiceLineModel> _editServiceLines;
  
         const string MONEY_FORMAT = "{0:0.00}";
         public readonly string[] _validateProperties = { "TechName", "ServiceDate" };
@@ -36,22 +35,21 @@ namespace Corron.CarService
 
         private void Initialize()
         {
-            _serviceLineList = new List<ServiceLineModel>();
+            _serviceLineList = new List<IServiceLineModel>();
         }
 
         // Properties
-        public ServiceLineModel CurrentServiceLine { get; set; }
+        public IServiceLineModel CurrentServiceLine { get; set; }
 
         [DataMember]
-        public List<ServiceLineModel> ServiceLineList
+        public List<IServiceLineModel> ServiceLineList
         {
             get
             {
-                return
-                _serviceLineList;
+                return _serviceLineList;
             }
         }
-        private List<ServiceLineModel> _serviceLineList;
+        private List<IServiceLineModel> _serviceLineList;
 
 
         [DataMember]
@@ -151,7 +149,7 @@ namespace Corron.CarService
 
             foreach(ServiceLineModel serviceLine in _serviceLineList)
             {
-                if (serviceLine.Delete == 0)
+                if (serviceLine.Delete == false)
                 {
                     switch (serviceLine.ServiceLineType)
                     {
@@ -203,13 +201,8 @@ namespace Corron.CarService
         {
             //make a copy of the original in case cancels
             ObjectCopier.CopyFields(_editCopy = new ServiceModel(0), this);
-            CopyDetailLines(ref _editServiceLines,_serviceLineList);
-            foreach (ServiceLineModel SL in _serviceLineList)
-            {
-                SL.SnapShotCharge();
-            }
-            ServiceLineModel.RecalcAction = RecalcCost;
-            ServiceLineModel.ValidChangedAction = NotifyValidDetail;
+            _editServiceLines = ObjectCopier.CopyList<IServiceLineModel>(_serviceLineList);
+            ServiceLineModel.PassDelegates(NotifyValidDetail, RecalcCost);
             NotifyOfPropertyChange(()=>IsValidState);
         }
 
@@ -217,32 +210,18 @@ namespace Corron.CarService
         {
             _editCopy = null;
             _editServiceLines = null;
-            ServiceLineModel.RecalcAction = null;
+            ServiceLineModel.NullDelegates();
         }
 
         public void CancelEdit()
         {
-            ServiceLineModel.RecalcAction = null;
+            ServiceLineModel.NullDelegates();
 
             ObjectCopier.CopyFields(this, _editCopy);
             _editCopy = null;
 
-            CopyDetailLines(ref _serviceLineList,_editServiceLines);
+            _serviceLineList = ObjectCopier.CopyList<IServiceLineModel>(_editServiceLines);
             RollBackNotifyAction();
         }
-
-        private void CopyDetailLines(ref List<ServiceLineModel> to, List<ServiceLineModel> from)
-        {
-            if (to is null)
-                to = new List<ServiceLineModel>();
-            else
-                to.Clear();
-            foreach (ServiceLineModel item in from)
-            {
-                to.Add(new ServiceLineModel(item));
-            }
-        }
-
-
     }
 }

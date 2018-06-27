@@ -9,13 +9,14 @@
         string Owner { get; set; }
         int Year { get; set; }
 
+        int CompareTo(CarModel rightCar);
+
         string Error { get;}
         string this[string columnName] { get; }
 
         void BeginEdit();
         void CancelEdit();
         void EndEdit();
-        int CompareTo(CarModel rightCar);
 
     }
 }

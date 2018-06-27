@@ -21,5 +21,14 @@ namespace Corron.CarService
                     propertyInfo.SetValue(dest, propertyInfo.GetValue(source, null), null);
             }
         }
+        public static List<T> CopyList<T>(List<T> source)
+        {
+            var dest = new List<T>();
+            foreach(T item in source)
+            {
+                dest.Add(item);
+            }
+            return dest;
+        }
     }
 }

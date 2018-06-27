@@ -68,7 +68,7 @@ namespace Corron.CarService
             }
         }
 
-        public static bool UpdateCar(CarModel car)
+        public static bool UpdateCar(ICarModel car)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace Corron.CarService
                     if (results[0] >= 0 && service.ServiceID <= 0)
                         service.ServiceID = results[0];
 
-                    List<ServiceLineModel> SL = service.ServiceLineList;
+                    List<IServiceLineModel> SL = service.ServiceLineList;
                     if (SL.Count > 255)
                         throw new Exception("Too many detail lines!");
                     else

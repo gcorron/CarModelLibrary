@@ -60,6 +60,8 @@
     <Compile Include="Models\CarModel.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="Models\ICarModel.cs" />
+    <Compile Include="Models\IServiceLineModel.cs" />
+    <Compile Include="Models\IServiceModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Models\ServiceLineModel.cs" />
     <Compile Include="Models\ServiceModel.cs" />

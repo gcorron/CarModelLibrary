@@ -13,7 +13,7 @@ using System.Runtime.Serialization;
 namespace Corron.CarService
 {
     [DataContract]
-    public class ServiceLineModel : PropertyChangedBase, IDataErrorInfo
+    public class ServiceLineModel : PropertyChangedBase, IDataErrorInfo, IServiceLineModel
     {
 
         public enum LineTypes : byte { Labor, Parts };
@@ -24,10 +24,10 @@ namespace Corron.CarService
         private bool? _validState;
 
         public delegate void RecalcDelegate(); //delegate type declaration for recalc
-        public static RecalcDelegate RecalcAction; //store the recalc method once for all (static)
+        private static RecalcDelegate RecalcAction; //store the recalc method once for all (static)
 
         public delegate void ValidChangedDelegate();
-        public static ValidChangedDelegate ValidChangedAction;
+        private static ValidChangedDelegate ValidChangedAction;
 
 
 
@@ -51,6 +51,18 @@ namespace Corron.CarService
             ObjectCopier.CopyFields(this, copy);
         }
 
+        // delegate initialization
+        public static void PassDelegates(ValidChangedDelegate vcd, RecalcDelegate rd)
+        {
+            RecalcAction = rd;
+            ValidChangedAction = vcd;
+        }
+        public static void NullDelegates()
+        {
+            RecalcAction = null;
+            ValidChangedAction = null;
+        }
+
         //properties
 
         [DataMember]
@@ -67,7 +79,6 @@ namespace Corron.CarService
                 _serviceLineType = value;
                 _lastLineType = value;
                 DoRecalc();
-                //NotifyOfPropertyChange();
             }
         }
         private LineTypes _serviceLineType;
@@ -103,7 +114,7 @@ namespace Corron.CarService
         }
         private decimal _serviceLineCharge;
 
-        public byte Delete {
+        public bool Delete {
             get
             {
                 return _delete;
@@ -115,7 +126,7 @@ namespace Corron.CarService
                 //NotifyOfPropertyChange();
             }
         }
-        private byte _delete;
+        private bool _delete;
 
  
 
@@ -123,14 +134,11 @@ namespace Corron.CarService
         {
             get
             {
-                if (new string[] { "ServiceLineDesc", "ServiceLineCharge" }.Any(s => !(this[s] is null)))
-                    return false;
-                else
-                    return true;
+                return (new string[] { "ServiceLineDesc", "ServiceLineCharge" }.All(s => (this[s] is null)));
             }
         }
 
-        // Methods
+        // Methods to notify parent class
 
         private void NotifyIfValidChanged()
         {
@@ -140,6 +148,7 @@ namespace Corron.CarService
             bool newValidState = IsValidState;
             if (newValidState == _validState) //_validState is Nullable, so only test that works is equality
                 return;
+
             ValidChangedAction();
             _validState = newValidState;
         }
@@ -150,37 +159,8 @@ namespace Corron.CarService
                 return;
             RecalcAction();
         }
-        public void SnapShotCharge() //allows efficient recalc whenever total charges are recalculated
-        {
-            if (Delete !=0)
-            {
-                _calcLineCharge[0] = 0M; _calcLineCharge[1] = 0M;
-                return;
-            }
 
-            _calcLineCharge[0] = (_serviceLineType == LineTypes.Labor && Delete == 0) ? _serviceLineCharge : 0;
-            _calcLineCharge[1] = (_serviceLineType == LineTypes.Parts && Delete == 0) ? _serviceLineCharge : 0;
-        }
-
-        public decimal[] ChargeChanges() //retrieves changes in line charge since the last snapshot, then takes a new snapshot
-        {
-            decimal[] change = new decimal[] { 0M , 0M } ;
-
-            if (_serviceLineType == LineTypes.Labor && Delete == 0)
-                change[0] = _serviceLineCharge - _calcLineCharge[0];
-            else
-                change[0] =  - _calcLineCharge[0];
-
-            if (_serviceLineType == LineTypes.Parts && Delete == 0 )
-                change[1] = _serviceLineCharge - _calcLineCharge[1];
-            else
-                change[1] = -_calcLineCharge[1];
-
-            SnapShotCharge();
-            return change;
-        }
-
-
+      
         // Implements IDataErrorInfo
         public string Error
         {

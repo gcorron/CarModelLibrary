@@ -13,9 +13,11 @@ namespace Corron.CarService
 {
     [DataContract]
     public class CarModel : Caliburn.Micro.PropertyChangedBase, IComparable<CarModel>, IDataErrorInfo, IEditableObject, ICarModel
-    {
+    { 
 
-        private CarModel _editCopy;
+        private ICarModel _editCopy;
+
+        //ICarModel
 
         [DataMember]
         public int CarID { get; set; }
@@ -71,6 +73,9 @@ namespace Corron.CarService
             }
         }
         private string _owner;
+
+
+        //End ICarModel
 
         public new string ToString
         {
