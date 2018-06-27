@@ -14,8 +14,12 @@ namespace Corron.CarService
             if (!decimal.TryParse(cost, out dcost))
                 return "Non-numeric value.";
 
+
             int i = cost.IndexOf('.');
-            if (i > 0 && i == cost.Length - 3)
+            if (i < 0)
+                return ValidateCost(dcost);
+
+            if (i == cost.Length - 3)
                 return ValidateCost(dcost);
             else
             {

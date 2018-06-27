@@ -18,6 +18,9 @@ namespace Corron.CarService
         public readonly string[] _validateProperties = { "TechName", "ServiceDate" };
 
 
+        public delegate void RolledBackNotifyDelegate();
+        public static RolledBackNotifyDelegate RollBackNotifyAction;
+
 
         // Constructors
         public ServiceModel(int carID)
@@ -89,18 +92,11 @@ namespace Corron.CarService
             set
             {
                 _laborCost = value;
-                NotifyOfPropertyChange(()=>LaborCostString);
+                NotifyOfPropertyChange();
             }
         }
         private decimal _laborCost;
 
-        public string LaborCostString
-        {
-            get
-            {
-                return String.Format(MONEY_FORMAT, _laborCost);
-            }
-        }
 
         [DataMember]
         public decimal PartsCost
@@ -109,19 +105,10 @@ namespace Corron.CarService
             set
             {
                 _partsCost = value;
-                NotifyOfPropertyChange(()=>PartsCostString);
+                NotifyOfPropertyChange();
             }
         }
         private decimal _partsCost;
-
-        public string PartsCostString
-        {
-            get
-            {
-                return String.Format(MONEY_FORMAT,_partsCost);
-            }
- 
-        }
 
         public decimal TotalCost
         {
@@ -241,7 +228,7 @@ namespace Corron.CarService
             _editCopy = null;
 
             CopyDetailLines(ref _serviceLineList,_editServiceLines);
-
+            RollBackNotifyAction();
         }
 
         private void CopyDetailLines(ref List<ServiceLineModel> to, List<ServiceLineModel> from)

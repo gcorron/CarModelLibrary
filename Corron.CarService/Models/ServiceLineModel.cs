@@ -84,7 +84,6 @@ namespace Corron.CarService
             set
             {
                 _serviceLineDesc = value;
-                //NotifyOfPropertyChange(() => IsValidState);
                 NotifyIfValidChanged();
             }
         }
@@ -97,29 +96,12 @@ namespace Corron.CarService
             set
             {
                 _serviceLineCharge = value;
-                if (ServiceLineCharge == 0)
-                    ChargeString = "";
-                else
-                    ChargeString = String.Format(MONEY_FORMAT, _serviceLineCharge);
-            }
-        }
-        private decimal _serviceLineCharge;
-
-        public string ChargeString
-        {
-            get
-            {
-                   return _chargeString;
-            }
-            set
-            {
-                _chargeString = value;
-                Validation.ValidateCostString(value, out _serviceLineCharge);
+                Validation.ValidateCost(value);
                 NotifyIfValidChanged();
                 DoRecalc();
             }
         }
-        private string _chargeString;
+        private decimal _serviceLineCharge;
 
         public byte Delete {
             get
@@ -141,7 +123,7 @@ namespace Corron.CarService
         {
             get
             {
-                if (new string[] { "ServiceLineDesc", "ChargeString" }.Any(s => !(this[s] is null)))
+                if (new string[] { "ServiceLineDesc", "ServiceLineCharge" }.Any(s => !(this[s] is null)))
                     return false;
                 else
                     return true;
@@ -213,11 +195,10 @@ namespace Corron.CarService
         {
             get
             {
-                decimal junk;
                 switch (columnName)
                 {
                     case "ServiceLineDesc": return Validation.FiftyNoBlanks(ServiceLineDesc);
-                    case "ChargeString": return Validation.ValidateCostString(ChargeString, out junk);
+                    case "ServiceLineCharge": return Validation.ValidateCost(ServiceLineCharge);
                     default:
                         return "Invalid Column Name";
                 }
